@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FridMan - Frida Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #2d2540 0%, #3d3558 100%);
+            color: #e8e4f0;
+            min-height: 100vh;
+            padding-bottom: 100px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            width: 100%;
+            min-width: 0;
+        }
+
+        .header {
+            background: rgba(45, 37, 64, 0.95);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            min-width: 0;
+        }
+
+        .logo {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #f5c98b 0%, #f5a85a 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .logo svg {
+            width: 30px;
+            height: 30px;
+        }
+
+        .header-content {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .header-content h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #f5c98b;
+            margin-bottom: 6px;
+            word-break: break-word;
+        }
+
+        .header-content p {
+            font-size: 14px;
+            color: #a8a0c0;
+            word-break: break-word;
+        }
+
+        .card {
+            background: rgba(61, 53, 88, 0.6);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #f5c98b;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .card-title svg {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #f5c98b 0%, #f5a85a 100%);
+            color: #2d2540;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            margin: 8px 4px;
+            flex-wrap: wrap;
+            word-break: break-word;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(245, 201, 139, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(245, 168, 176, 0.2);
+            color: #f5a8b0;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(245, 168, 176, 0.3);
+            box-shadow: 0 8px 20px rgba(245, 168, 176, 0.3);
+        }
+
+        .btn svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 14px;
+            margin-top: 16px;
+        }
+
+        .feature-item {
+            background: rgba(45, 37, 64, 0.5);
+            padding: 18px;
+            border-radius: 16px;
+            min-width: 0;
+        }
+
+        .feature-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #a8c8ff 0%, #8fa8e8 100%);
+            border-radius: 14px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .feature-icon svg {
+            width: 26px;
+            height: 26px;
+        }
+
+        .feature-item h3 {
+            font-size: 15px;
+            color: #e8e4f0;
+            margin-bottom: 8px;
+            word-break: break-word;
+        }
+
+        .feature-item p {
+            font-size: 13px;
+            color: #a8a0c0;
+            line-height: 1.5;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .code-block {
+            background: #1a1625;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 14px 0;
+            overflow-x: auto;
+            border-left: 4px solid #f5c98b;
+            max-width: 100%;
+            min-width: 0;
+        }
+
+        .code-block code {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #a8e6cf;
+            line-height: 1.6;
+            white-space: pre;
+            word-break: break-all;
+            display: block;
+        }
+
+        .code-comment { color: #6b7280; }
+        .code-keyword { color: #f5c98b; }
+        .code-string { color: #d4a5ff; }
+
+        .step {
+            display: flex;
+            gap: 14px;
+            margin-bottom: 18px;
+            padding: 18px;
+            background: rgba(45, 37, 64, 0.4);
+            border-radius: 14px;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #f5c98b 0%, #f5a85a 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #2d2540;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .step-content h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #f5c98b;
+            word-break: break-word;
+        }
+
+        .step-content p {
+            font-size: 14px;
+            color: #a8a0c0;
+            line-height: 1.6;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .warning {
+            background: rgba(245, 168, 176, 0.15);
+            border: 1px solid rgba(245, 168, 176, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+            min-width: 0;
+        }
+
+        .warning-title {
+            color: #f5a8b0;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            word-break: break-word;
+        }
+
+        .warning-title svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .warning p, .warning li {
+            font-size: 14px;
+            color: #d8c8d0;
+            line-height: 1.6;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .success {
+            background: rgba(168, 230, 207, 0.15);
+            border: 1px solid rgba(168, 230, 207, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+            min-width: 0;
+        }
+
+        .success-title {
+            color: #a8e6cf;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            word-break: break-word;
+        }
+
+        .success-title svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(45, 37, 64, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 24px 24px 0 0;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            gap: 4px;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            color: #8880a0;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .nav-item:hover {
+            background: rgba(245, 201, 139, 0.1);
+            color: #f5c98b;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #f5c98b 0%, #f5a85a 100%);
+            color: #2d2540;
+        }
+
+        .nav-item svg {
+            width: 22px;
+            height: 22px;
+            flex-shrink: 0;
+        }
+
+        .nav-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+            word-break: break-word;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .section { display: none; }
+        .section.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        a { color: #f5c98b; text-decoration: none; word-break: break-all; }
+        a:hover { text-decoration: underline; }
+
+        ul { margin-left: 20px; margin-top: 10px; }
+        li { 
+            margin: 8px 0; 
+            color: #c8c0e0; 
+            line-height: 1.6; 
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 14px 0;
+            background: rgba(45, 37, 64, 0.3);
+            border-radius: 12px;
+            overflow: hidden;
+            display: block;
+            overflow-x: auto;
+            max-width: 100%;
+        }
+
+        thead, tbody {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            word-break: break-word;
+            overflow-wrap: break-word;
+            font-size: 13px;
+        }
+
+        th {
+            background: rgba(245, 201, 139, 0.2);
+            color: #f5c98b;
+            font-weight: 600;
+        }
+
+        tr:hover { background: rgba(255, 255, 255, 0.05); }
+
+        .highlight {
+            background: rgba(245, 201, 139, 0.2);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-family: monospace;
+            color: #f5c98b;
+            word-break: break-all;
+            display: inline;
+            white-space: normal;
+        }
+
+        .diagram {
+            background: rgba(26, 22, 37, 0.6);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+            border: 1px solid rgba(245, 201, 139, 0.2);
+            min-width: 0;
+        }
+
+        .diagram-title {
+            color: #f5c98b;
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 15px;
+            word-break: break-word;
+        }
+
+        .diagram-item {
+            padding: 10px 12px;
+            margin: 6px 0;
+            background: rgba(61, 53, 88, 0.5);
+            border-radius: 8px;
+            border-left: 3px solid #f5c98b;
+            font-size: 13px;
+            line-height: 1.5;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .diagram-item code, .diagram-item .highlight {
+            font-size: 12px;
+        }
+
+        .info-block {
+            background: rgba(169, 199, 239, 0.12);
+            border: 1px solid rgba(169, 199, 239, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+            min-width: 0;
+        }
+
+        .info-title {
+            color: #a9c7ef;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            word-break: break-word;
+        }
+
+        .info-title svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .info-block p, .info-block li {
+            font-size: 14px;
+            color: #c8c0e0;
+            line-height: 1.6;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        /* ===== АДАПТИВНОСТЬ ===== */
+        
+        @media (max-width: 768px) {
+            .container { padding: 16px; }
+            .card { padding: 20px; }
+            .header { padding: 20px; }
+            .features-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 480px) {
+            .container { padding: 12px; }
+            .card { padding: 16px; border-radius: 16px; }
+            .header { padding: 16px; border-radius: 16px; gap: 12px; }
+            .logo { width: 48px; height: 48px; }
+            .logo svg { width: 26px; height: 26px; }
+            .header-content h1 { font-size: 20px; }
+            .header-content p { font-size: 13px; }
+            .card-title { font-size: 18px; }
+            .features-grid { grid-template-columns: 1fr; gap: 10px; }
+            .feature-item { padding: 14px; }
+            .step { padding: 14px; gap: 10px; }
+            .step-number { width: 36px; height: 36px; font-size: 14px; }
+            .btn { padding: 12px 18px; font-size: 14px; margin: 6px 2px; }
+            .code-block { padding: 12px; font-size: 11px; }
+            .code-block code { font-size: 11px; }
+            .diagram-item { padding: 8px 10px; font-size: 12px; }
+            .bottom-nav { padding: 10px 10px; }
+            .nav-item { padding: 6px 4px; }
+            .nav-label { font-size: 10px; }
+            .nav-item svg { width: 20px; height: 20px; }
+            th, td { padding: 8px 8px; font-size: 12px; }
+            .warning, .success, .info-block { padding: 12px; }
+        }
+
+        @media (max-width: 360px) {
+            .container { padding: 10px; }
+            .card { padding: 14px; }
+            .header-content h1 { font-size: 18px; }
+            .btn { padding: 10px 14px; font-size: 13px; }
+            .nav-label { font-size: 9px; }
+        }
+
+        @media (max-height: 500px) and (orientation: landscape) {
+            .container { padding: 10px; }
+            .card { padding: 14px; margin-bottom: 12px; }
+            .header { padding: 14px; margin-bottom: 12px; }
+            .features-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+            .feature-item { padding: 10px; }
+            .step { padding: 10px; margin-bottom: 10px; }
+            .bottom-nav { padding: 8px 12px; }
+            .nav-item { padding: 4px 6px; }
+            .nav-label { font-size: 10px; }
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(245, 201, 139, 0.3); border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+    <!-- Home Section -->
+    <div id="home" class="section active">
+        <div class="container">
+            <div class="header">
+                <div class="logo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#2d2540" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                    </svg>
+                </div>
+                <div class="header-content">
+                    <h1>FridMan</h1>
+                    <p>Автономный Frida-менеджер с плавающим интерфейсом</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 16v-4M12 8h.01"/>
+                    </svg>
+                    Что такое FridMan?
+                </div>
+                <p style="line-height: 1.8; color: #c8c0e0; margin-bottom: 20px;">
+                    <strong>FridMan</strong> — это Android-приложение для инъекции JavaScript-скриптов в процессы с помощью Frida. 
+                    Работает полностью автономно на устройстве через <span class="highlight">frida-inject</span> без необходимости в frida-server, 
+                    ADB или компьютере.
+                </p>
+                <div style="margin-top: 20px;">
+                    <a href="#download" class="btn" onclick="showSection('download', event)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                        </svg>
+                        Скачать APK
+                    </a>
+                    <a href="#how" class="btn btn-secondary" onclick="showSection('how', event)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                        Как работает
+                    </a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                    Ключевые возможности
+                </div>
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#2d2540" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <circle cx="12" cy="12" r="6"/>
+                                <circle cx="12" cy="12" r="2"/>
+                            </svg>
+                        </div>
+                        <h3>Инъекция без сервера</h3>
+                        <p>Через frida-inject напрямую в процесс</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#2d2540" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                                <rect x="3" y="14" width="7" height="7" rx="1"/>
+                                <rect x="14" y="14" width="7" height="7" rx="1"/>
+                            </svg>
+                        </div>
+                        <h3>Плавающий интерфейс</h3>
+                        <p>Overlay-окно поверх всех приложений</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#2d2540" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                            </svg>
+                        </div>
+                        <h3>Редактор скриптов</h3>
+                        <p>Встроенный редактор с автосохранением</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#2d2540" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="4 17 10 11 4 5"/>
+                                <line x1="12" y1="19" x2="20" y2="19"/>
+                            </svg>
+                        </div>
+                        <h3>Терминал</h3>
+                        <p>Логи и отправка команд в скрипт</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#2d2540" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+                            </svg>
+                        </div>
+                        <h3>Плавающие кнопки</h3>
+                        <p>Быстрые команды поверх экрана</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#2d2540" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+                            </svg>
+                        </div>
+                        <h3>Настройки UI</h3>
+                        <p>Размер, прозрачность, масштаб окна</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    Как это работает?
+                </div>
+                
+                <div class="diagram">
+                    <div class="diagram-title">Принцип работы</div>
+                    <div class="diagram-item">
+                        <strong>Плавающая иконка</strong> — запускается поверх всех приложений, открывается по тапу
+                    </div>
+                    <div class="diagram-item">
+                        <strong>WebView-интерфейс</strong> — внутри плавающего окна работает полноценный UI с навигацией
+                    </div>
+                    <div class="diagram-item">
+                        <strong>Root-команды</strong> — приложение выполняет системные команды через su для сканирования процессов
+                    </div>
+                    <div class="diagram-item">
+                        <strong>Файл-мост</strong> — команды передаются в скрипт через общий файл с правами 777
+                    </div>
+                    <div class="diagram-item">
+                        <strong>Хранение скриптов</strong> — все скрипты сохраняются локально в приложении
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Подготовка</h3>
+                        <p>Скопируйте <span class="highlight">frida-inject</span> в <span class="highlight">/data/local/tmp/</span> и установите права 777</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Сканирование процессов</h3>
+                        <p>Приложение выполняет системную команду через root и показывает список процессов с PID</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Инъекция скрипта</h3>
+                        <p>Копирует скрипт во временную папку, ставит 777, запускает: <span class="highlight">frida-inject -p PID -s script.js</span></p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Отправка команд</h3>
+                        <p>Команды записываются в <span class="highlight">/data/local/tmp/frida_commands.txt</span> (777), скрипт читает файл через setInterval</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- How it works Section -->
+    <div id="how" class="section">
+        <div class="container">
+            <div class="card">
+                <div class="card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                    </svg>
+                    Как работает FridMan
+                </div>
+
+                <h3 style="color: #f5c98b; margin: 20px 0 12px;">Принцип работы</h3>
+                
+                <div class="info-block">
+                    <div class="info-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 16v-4M12 8h.01"/>
+                        </svg>
+                        Общая схема
+                    </div>
+                    <p style="margin: 0;">
+                        FridMan работает как foreground-сервис с плавающим overlay-окном. 
+                        Внутри окна запущен WebView с полноценным интерфейсом. 
+                        Все root-команды выполняются через su, а скрипты инжектируются через frida-inject.
+                    </p>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">Процесс инъекции</div>
+                    <div class="diagram-item">
+                        1. Пользователь выбирает процесс из списка → запоминается как текущая цель
+                    </div>
+                    <div class="diagram-item">
+                        2. Нажимает Run → приложение находит PID целевого процесса через системную команду
+                    </div>
+                    <div class="diagram-item">
+                        3. Скрипт копируется во временную папку с правами 777
+                    </div>
+                    <div class="diagram-item">
+                        4. Запускается: <span class="highlight">frida-inject -p PID -s script.js</span>
+                    </div>
+                    <div class="diagram-item">
+                        5. stdout/stderr процесса читается в реальном времени → логи появляются в терминале
+                    </div>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">Передача команд в скрипт</div>
+                    <div class="diagram-item">
+                        1. Пользователь пишет команду в терминале или нажимает плавающую кнопку
+                    </div>
+                    <div class="diagram-item">
+                        2. Приложение записывает команду в файл <span class="highlight">/data/local/tmp/frida_commands.txt</span> с правами 777
+                    </div>
+                    <div class="diagram-item">
+                        3. Скрипт (через setInterval каждые 500ms) читает файл через нативные вызовы libc
+                    </div>
+                    <div class="diagram-item">
+                        4. Выполняет команду через eval() и очищает файл
+                    </div>
+                    <div class="diagram-item">
+                        5. Результат выводится через console.log() → перехватывается Frida → попадает в терминал
+                    </div>
+                </div>
+
+                <div class="success">
+                    <div class="success-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        Ключевая особенность
+                    </div>
+                    <p style="margin: 0;">
+                        Скрипт сам стирает файл команд после прочтения — дубликатов команд не бывает. 
+                        Это надёжнее, чем очереди или сокеты.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                    Хранение данных
+                </div>
+
+                <div class="info-block">
+                    <div class="info-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+                        </svg>
+                        Где что лежит
+                    </div>
+                    <ul style="margin: 8px 0 0 20px;">
+                        <li><strong>Скрипты пользователя</strong> — хранятся внутри приложения, доступны через раздел "My Scripts"</li>
+                        <li><strong>Временный скрипт</strong> — копируется в cache при каждой инъекции</li>
+                        <li><strong>Настройки</strong> — размер иконки, прозрачность, масштаб, позиции кнопок</li>
+                        <li><strong>frida-inject</strong> — должен лежать в <span class="highlight">/data/local/tmp/</span> с правами 777</li>
+                        <li><strong>frida_commands.txt</strong> — файл-мост команд, создаётся автоматически</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                        <line x1="8" y1="21" x2="16" y2="21"/>
+                        <line x1="12" y1="17" x2="12" y2="21"/>
+                    </svg>
+                    Связь интерфейса и системы
+                </div>
+
+                <p style="margin-bottom: 12px; color: #c8c0e0;">
+                    Интерфейс внутри плавающего окна общается с системой через специальный мост:
+                </p>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Действие в UI</th>
+                            <th>Что происходит</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Обновить список процессов</td>
+                            <td>Выполняется системная команда сканирования</td>
+                        </tr>
+                        <tr>
+                            <td>Запустить скрипт</td>
+                            <td>Копирование + chmod + запуск frida-inject</td>
+                        </tr>
+                        <tr>
+                            <td>Отправить команду</td>
+                            <td>Запись в файл-мост команд</td>
+                        </tr>
+                        <tr>
+                            <td>Сохранить скрипт</td>
+                            <td>Запись в хранилище приложения</td>
+                        </tr>
+                        <tr>
+                            <td>Переместить окно</td>
+                            <td>Обновление позиции overlay</td>
+                        </tr>
+                        <tr>
+                            <td>Свернуть/развернуть</td>
+                            <td>Изменение высоты WebView</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="success">
+                    <div class="success-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        Важно
+                    </div>
+                    <p style="margin: 0;">
+                        Все вызовы между интерфейсом и системой асинхронные — UI не блокируется во время выполнения root-команд.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Docs Section -->
+    <div id="docs" class="section">
+        <div class="container">
+            <div class="card">
+                <div class="card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                    </svg>
+                    Быстрый старт
+                </div>
+                
+                <div class="success">
+                    <div class="success-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        Всего 2 шага!
+                    </div>
+                    <p style="margin: 0;">Никаких сложных установок — просто скопируйте frida-inject и дайте права</p>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Скопируйте frida-inject</h3>
+                        <p>Закиньте файл <span class="highlight">frida-inject</span> в папку <span class="highlight">/data/local/tmp/</span></p>
+                        <div class="code-block">
+                            <code>
+<span class="code-comment"># Через файловый менеджер с root или adb:</span><br>
+su<br>
+cp /sdcard/Download/frida-inject /data/local/tmp/<br>
+chmod 777 /data/local/tmp/frida-inject
+                            </code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Запустите FridMan</h3>
+                        <p>Разрешите overlay-права → нажмите <strong>"Launch icon"</strong> → появится плавающая иконка</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                    </svg>
+                    Создание скрипта
+                </div>
+                <p style="margin-bottom: 12px; color: #c8c0e0;">
+                    Скрипты пишутся прямо в приложении! Нажмите <strong>"My Scripts"</strong> → <strong>"New Script"</strong>
+                </p>
+                
+                <div class="code-block">
+                    <code>
+<span class="code-comment">// FRIDA SCRIPT</span><br>
+console.log('[*] Started!');<br>
+<br>
+<span class="code-comment">// Ваш код здесь...</span>
+                    </code>
+                </div>
+
+                <div class="warning">
+                    <div class="warning-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                            <line x1="12" y1="9" x2="12" y2="13"/>
+                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                        Шаблон скрипта с мостом команд
+                    </div>
+                    <p style="margin: 10px 0;">
+                        Используйте этот шаблон для начала работы. Он включает мост команд для работы с терминалом:
+                    </p>
+                </div>
+
+                <div class="code-block">
+                    <code>
+<span class="code-comment">// === МОСТ КОМАНД (обязательно!) ===</span><br>
+<span class="code-keyword">const</span> CMD_PATH = <span class="code-string">"/data/local/tmp/frida_commands.txt"</span>;<br>
+<span class="code-keyword">const</span> libc = Process.getModuleByName(<span class="code-string">"libc.so"</span>);<br>
+<br>
+<span class="code-keyword">const</span> openF = <span class="code-keyword">new</span> NativeFunction(libc.getExportByName(<span class="code-string">"open"</span>), <span class="code-string">"int"</span>, [<span class="code-string">"pointer"</span>, <span class="code-string">"int"</span>, <span class="code-string">"int"</span>]);<br>
+<span class="code-keyword">const</span> readF = <span class="code-keyword">new</span> NativeFunction(libc.getExportByName(<span class="code-string">"read"</span>), <span class="code-string">"int"</span>, [<span class="code-string">"int"</span>, <span class="code-string">"pointer"</span>, <span class="code-string">"int"</span>]);<br>
+<span class="code-keyword">const</span> closeF = <span class="code-keyword">new</span> NativeFunction(libc.getExportByName(<span class="code-string">"close"</span>), <span class="code-string">"int"</span>, [<span class="code-string">"int"</span>]);<br>
+<br>
+<span class="code-keyword">const</span> O_RDONLY = 0, O_WRONLY = 1, O_TRUNC = 512;<br>
+<br>
+<span class="code-keyword">function</span> <span class="code-function">readCmd</span>() {<br>
+&nbsp;&nbsp;<span class="code-keyword">const</span> p = Memory.allocUtf8String(CMD_PATH);<br>
+&nbsp;&nbsp;<span class="code-keyword">const</span> fd = openF(p, O_RDONLY, 0);<br>
+&nbsp;&nbsp;<span class="code-keyword">if</span> (fd < 0) <span class="code-keyword">return</span> null;<br>
+&nbsp;&nbsp;<span class="code-keyword">const</span> buf = Memory.alloc(4096);<br>
+&nbsp;&nbsp;<span class="code-keyword">const</span> n = readF(fd, buf, 4095);<br>
+&nbsp;&nbsp;closeF(fd);<br>
+&nbsp;&nbsp;<span class="code-keyword">if</span> (n <= 0) <span class="code-keyword">return</span> <span class="code-string">""</span>;<br>
+&nbsp;&nbsp;<span class="code-keyword">return</span> buf.readUtf8String(n);<br>
+}<br>
+<br>
+<span class="code-keyword">function</span> <span class="code-function">clearCmd</span>() {<br>
+&nbsp;&nbsp;<span class="code-keyword">const</span> p = Memory.allocUtf8String(CMD_PATH);<br>
+&nbsp;&nbsp;<span class="code-keyword">const</span> fd = openF(p, O_WRONLY | O_TRUNC, 0);<br>
+&nbsp;&nbsp;<span class="code-keyword">if</span> (fd >= 0) closeF(fd);<br>
+}<br>
+<br>
+<span class="code-keyword">function</span> <span class="code-function">execCmd</span>(raw) {<br>
+&nbsp;&nbsp;<span class="code-keyword">let</span> cmd = raw.trim();<br>
+&nbsp;&nbsp;<span class="code-keyword">if</span> (!cmd) <span class="code-keyword">return</span>;<br>
+&nbsp;&nbsp;console.log(<span class="code-string">"[CMD] >> "</span> + cmd);<br>
+&nbsp;&nbsp;<span class="code-keyword">try</span> {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">if</span> (!cmd.includes(<span class="code-string">"("</span>) && <span class="code-keyword">typeof</span> globalThis[cmd] === <span class="code-string">"function"</span>) cmd += <span class="code-string">"()"</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(1, eval)(cmd);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;console.log(<span class="code-string">"[CMD] OK: "</span> + cmd);<br>
+&nbsp;&nbsp;} <span class="code-keyword">catch</span> (e) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;console.log(<span class="code-string">"[CMD] ERR: "</span> + e.message);<br>
+&nbsp;&nbsp;}<br>
+}<br>
+<br>
+setInterval(() => {<br>
+&nbsp;&nbsp;<span class="code-keyword">const</span> c = readCmd();<br>
+&nbsp;&nbsp;<span class="code-keyword">if</span> (c !== null && c.trim().length > 0) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;clearCmd();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;execCmd(c);<br>
+&nbsp;&nbsp;}<br>
+}, 500);<br>
+<br>
+<span class="code-comment">// === ВАШИ КОМАНДЫ ===</span><br>
+globalThis.help = <span class="code-keyword">function</span>() {<br>
+&nbsp;&nbsp;console.log(<span class="code-string">"help() - show commands"</span>);<br>
+};<br>
+<br>
+console.log(<span class="code-string">"[+] Script ready. Type help()"</span>);
+                    </code>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="4 17 10 11 4 5"/>
+                        <line x1="12" y1="19" x2="20" y2="19"/>
+                    </svg>
+                    Работа с командами
+                </div>
+                <p style="margin-bottom: 12px; color: #c8c0e0;">
+                    Все команды передаются через файл <span class="highlight">/data/local/tmp/frida_commands.txt</span>
+                </p>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Команда</th>
+                            <th>Описание</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>help()</code></td>
+                            <td>Показать список команд</td>
+                        </tr>
+                        <tr>
+                            <td><code>help</code></td>
+                            <td>То же самое (скобки добавятся автоматически)</td>
+                        </tr>
+                        <tr>
+                            <td><code>dump()</code></td>
+                            <td>Запустить дамп памяти</td>
+                        </tr>
+                        <tr>
+                            <td><code>search("text")</code></td>
+                            <td>Поиск строки в памяти</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="warning">
+                    <div class="warning-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                            <line x1="12" y1="9" x2="12" y2="13"/>
+                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                        Важные правила
+                    </div>
+                    <ul style="margin: 0; padding-left: 20px;">
+                        <li>Все команды должны быть функциями в <code>globalThis</code></li>
+                        <li>Всегда используйте <code>try/catch</code> в командах</li>
+                        <li>Логи пишите только на английском (русский ломается)</li>
+                        <li>Не используйте <code>fs.*</code> — в Frida нет Node.js API</li>
+                        <li>Используйте <code>setInterval</code> чтобы скрипт не завершался</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7" rx="1"/>
+                        <rect x="14" y="3" width="7" height="7" rx="1"/>
+                        <rect x="3" y="14" width="7" height="7" rx="1"/>
+                        <rect x="14" y="14" width="7" height="7" rx="1"/>
+                    </svg>
+                    Плавающие кнопки
+                </div>
+                <p style="margin-bottom: 12px; color: #c8c0e0;">
+                    Создавайте кнопки для быстрого вызова команд:
+                </p>
+                <ul>
+                    <li><strong>Название кнопки:</strong> Текст на кнопке (например "Help")</li>
+                    <li><strong>Команда:</strong> Что выполнить (например "help()")</li>
+                    <li><strong>На экране:</strong> Кнопка появляется поверх всех приложений</li>
+                </ul>
+                <p style="margin-top: 12px; color: #a8a0c0;">
+                    Tap = отправить команду, Drag = переместить, Long-press = удалить
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="4 17 10 11 4 5"/>
+                        <line x1="12" y1="19" x2="20" y2="19"/>
+                    </svg>
+                    Работа с терминалом
+                </div>
+                <p style="margin-bottom: 12px; color: #c8c0e0;">
+                    Терминал показывает логи скрипта и позволяет отправлять команды:
+                </p>
+                <ul>
+                    <li><strong>Send command...</strong> — поле для ввода команд</li>
+                    <li><strong>Copy all</strong> — скопировать весь вывод</li>
+                    <li><strong>Clear</strong> — очистить терминал</li>
+                    <li><strong>Long-press + drag</strong> — выделение текста для копирования</li>
+                </ul>
+                <div class="success">
+                    <div class="success-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        Готово к работе
+                    </div>
+                    <p style="margin: 0;">После инъекции скрипта в терминале появится <code>> Ready</code></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Download Section -->
+    <div id="download" class="section">
+        <div class="container">
+            <div class="card">
+                <div class="card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                    </svg>
+                    Скачать FridMan
+                </div>
+                <p style="margin-bottom: 20px; color: #c8c0e0; line-height: 1.8;">
+                    Последняя версия: <strong>v1.0.0</strong>
+                </p>
+                
+                <div style="text-align: center; margin: 24px 0;">
+                    <a href="#" class="btn" style="font-size: 17px; padding: 16px 32px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                        </svg>
+                        Скачать APK
+                    </a>
+                </div>
+
+                <div class="warning">
+                    <div class="warning-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                        Что нужно для работы
+                    </div>
+                    <ul style="margin: 10px 0 0 20px;">
+                        <li>Root права на устройстве</li>
+                        <li>Файл <code>frida-inject</code> (скачать отдельно)</li>
+                        <li>Разрешение на overlay (SYSTEM_ALERT_WINDOW)</li>
+                        <li>Android 8.0+ (API 26)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                    </svg>
+                    Скачать frida-inject
+                </div>
+                <p style="margin-bottom: 12px; color: #c8c0e0;">
+                    FridMan требует frida-inject для работы. Скачайте последнюю версию:
+                </p>
+                
+                <div class="code-block">
+                    <code>
+<span class="code-comment"># Официальный сайт Frida:</span><br>
+<a href="https://github.com/frida/frida/releases" target="_blank" style="color: #f5c98b;">https://github.com/frida/frida/releases</a><br>
+<br>
+<span class="code-comment"># Найдите файл frida-inject-*.xz для Android</span><br>
+<span class="code-comment"># Распакуйте и скопируйте в /data/local/tmp/</span><br>
+<span class="code-comment"># chmod 777 /data/local/tmp/frida-inject</span>
+                    </code>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                    </svg>
+                    Готовые скрипты
+                </div>
+                <p style="margin-bottom: 12px; color: #c8c0e0;">
+                    Шаблоны скриптов для начала работы:
+                </p>
+                
+                <div class="code-block">
+                    <code>
+<span class="code-comment">// Базовый шаблон с мостом команд</span><br>
+<a href="#" style="color: #f5c98b;">basic-template.js</a>
+                    </code>
+                </div>
+                
+                <div class="code-block">
+                    <code>
+<span class="code-comment">// Поиск строк в памяти</span><br>
+<a href="#" style="color: #f5c98b;">memory-search.js</a>
+                    </code>
+                </div>
+                
+                <div class="code-block">
+                    <code>
+<span class="code-comment">// Хук нативных функций</span><br>
+<a href="#" style="color: #f5c98b;">native-hook.js</a>
+                    </code>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="#home" class="nav-item active" onclick="showSection('home', event)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            <span class="nav-label">Home</span>
+        </a>
+        <a href="#how" class="nav-item" onclick="showSection('how', event)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span class="nav-label">How it works</span>
+        </a>
+        <a href="#docs" class="nav-item" onclick="showSection('docs', event)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            <span class="nav-label">Docs</span>
+        </a>
+        <a href="#download" class="nav-item" onclick="showSection('download', event)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+            <span class="nav-label">Download</span>
+        </a>
+    </nav>
+
+    <script>
+        function showSection(sectionId, event) {
+            if (event) event.preventDefault();
+            
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            document.getElementById(sectionId).classList.add('active');
+            
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            }
+            
+            window.scrollTo(0, 0);
+        }
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                if (href !== '#' && href.length > 1) {
+                    const target = document.querySelector(href);
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
